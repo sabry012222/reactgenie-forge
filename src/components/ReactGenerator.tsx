@@ -6,7 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { Sparkles, Download, Copy, Code, Zap, Globe, FolderOpen, FileText, Package } from 'lucide-react';
+import { Sparkles, Download, Copy, Code, Zap, Globe, FolderOpen, FileText, Package, Eye, Edit3 } from 'lucide-react';
+import ProjectPreview from './ProjectPreview';
+import ModificationRequest from './ModificationRequest';
 
 interface ProjectFile {
   name: string;
@@ -82,6 +84,16 @@ const ReactGenerator = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleModificationApplied = (updatedProject: GeneratedProject) => {
+    setGeneratedProject(updatedProject);
+    setSelectedFile(updatedProject.files[0]); // Update selected file
+    
+    toast({
+      title: language === 'ar' ? "تم التعديل!" : "Modified!",
+      description: language === 'ar' ? "تم تحديث المشروع بالتعديلات الجديدة" : "Project updated with new modifications"
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-background" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <div className="container mx-auto px-4 py-8">
@@ -128,14 +140,22 @@ const ReactGenerator = () => {
         {/* Main Interface */}
         <div className="max-w-7xl mx-auto">
           <Tabs defaultValue="generate" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsList className="grid w-full grid-cols-4 mb-8">
               <TabsTrigger value="generate" className="flex items-center gap-2">
                 <Zap className="w-4 h-4" />
                 {language === 'ar' ? 'إنشاء المشروع' : 'Generate Project'}
               </TabsTrigger>
               <TabsTrigger value="output" className="flex items-center gap-2">
                 <FolderOpen className="w-4 h-4" />
-                {language === 'ar' ? 'المشروع المولد' : 'Generated Project'}
+                {language === 'ar' ? 'ملفات المشروع' : 'Project Files'}
+              </TabsTrigger>
+              <TabsTrigger value="preview" className="flex items-center gap-2" disabled={!generatedProject}>
+                <Eye className="w-4 h-4" />
+                {language === 'ar' ? 'المراجعة' : 'Preview'}
+              </TabsTrigger>
+              <TabsTrigger value="modify" className="flex items-center gap-2" disabled={!generatedProject}>
+                <Edit3 className="w-4 h-4" />
+                {language === 'ar' ? 'التعديل' : 'Modify'}
               </TabsTrigger>
             </TabsList>
 
@@ -296,6 +316,52 @@ const ReactGenerator = () => {
                       {language === 'ar' 
                         ? 'ابدأ بكتابة وصف مشروعك في تبويب إنشاء المشروع. سيتم توليد مشروع React كامل بجميع الملفات والمجلدات المطلوبة.'
                         : 'Start by writing your project description in the Generate Project tab. A complete React project with all required files and folders will be generated.'
+                      }
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="preview" className="space-y-6">
+              {generatedProject ? (
+                <ProjectPreview project={generatedProject} language={language} />
+              ) : (
+                <Card className="bg-gradient-card shadow-elegant border-0">
+                  <CardContent className="flex flex-col items-center justify-center py-20">
+                    <Eye className="w-24 h-24 text-muted-foreground mb-6" />
+                    <h3 className="text-xl font-semibold mb-2">
+                      {language === 'ar' ? 'لا يوجد مشروع للمراجعة' : 'No Project to Preview'}
+                    </h3>
+                    <p className="text-muted-foreground text-center max-w-md">
+                      {language === 'ar' 
+                        ? 'قم بإنشاء مشروع أولاً لرؤية المعاينة المباشرة'
+                        : 'Generate a project first to see the live preview'
+                      }
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="modify" className="space-y-6">
+              {generatedProject ? (
+                <ModificationRequest 
+                  project={generatedProject} 
+                  language={language}
+                  onModificationApplied={handleModificationApplied}
+                />
+              ) : (
+                <Card className="bg-gradient-card shadow-elegant border-0">
+                  <CardContent className="flex flex-col items-center justify-center py-20">
+                    <Edit3 className="w-24 h-24 text-muted-foreground mb-6" />
+                    <h3 className="text-xl font-semibold mb-2">
+                      {language === 'ar' ? 'لا يوجد مشروع للتعديل' : 'No Project to Modify'}
+                    </h3>
+                    <p className="text-muted-foreground text-center max-w-md">
+                      {language === 'ar' 
+                        ? 'قم بإنشاء مشروع أولاً لتتمكن من طلب التعديلات عليه'
+                        : 'Generate a project first to request modifications'
                       }
                     </p>
                   </CardContent>
